@@ -13,12 +13,10 @@ namespace Taskbar
 		return hwnd;
 	}
 
-	bool ToggleShowDesktopButtonVisibility()
+	bool HideShowDesktopButton()
 	{
 		HWND hwnd = GetShowDesktopButtonHwnd();
-		bool ret = ShowWindow(hwnd, 0);
-		printf("hwnd = %d\n", hwnd);
-		printf("ShowWindow = %d\n", ret);
+		bool ret = (bool)ShowWindow(hwnd, 0);
 		return ret;
 	}
 }

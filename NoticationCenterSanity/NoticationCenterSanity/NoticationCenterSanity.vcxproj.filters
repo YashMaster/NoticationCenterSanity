@@ -26,22 +26,10 @@
     <ClInclude Include="C.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CoordinateConverter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Geometry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Hooker.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Keyboard.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Maths.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Mouse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RedirectIO.h">

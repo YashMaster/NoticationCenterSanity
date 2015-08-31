@@ -4,7 +4,7 @@
 #include "C.h"
 #include "Taskbar.h"
 #include "Geometry.h"
-
+#include "Keyboard.h"
 
 namespace MouseHooker
 {
@@ -13,8 +13,9 @@ namespace MouseHooker
 
 	LRESULT CALLBACK LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 	{
-		MSLLHOOKSTRUCT * msll = (MSLLHOOKSTRUCT *)lParam;
-		printf("Something happened %d\n", Counter++);
+		if (nCode != HC_ACTION)
+			goto skip;
+
 
 		POINT cursor;
 		GetCursorPos(&cursor);
@@ -26,18 +27,19 @@ namespace MouseHooker
 		if (Geometry::IsInRect(cursor, showDesktopButton) == false)
 			goto skip;
 
-		if (nCode == HC_ACTION)
+
+		switch (wParam)
 		{
-			switch (wParam)
-			{
-			case WM_LBUTTONDOWN: //Get the first point
-				return 1;
-			case WM_LBUTTONUP: //Get the second point
-				return 1;
-			}
+		case WM_LBUTTONDOWN:
+			return 1;
+
+		case WM_LBUTTONUP:
+			SendShortcut(L"{VK_LWIN}A");
+			return 1;
 		}
 
-		skip:
+
+	skip:
 		return CallNextHookEx(Hook, nCode, wParam, lParam);
 	}
 

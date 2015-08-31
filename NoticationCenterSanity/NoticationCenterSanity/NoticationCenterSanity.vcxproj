@@ -151,12 +151,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="C.h" />
-    <ClInclude Include="CoordinateConverter.h" />
     <ClInclude Include="Geometry.h" />
-    <ClInclude Include="Hooker.h" />
     <ClInclude Include="Keyboard.h" />
-    <ClInclude Include="Maths.h" />
-    <ClInclude Include="Mouse.h" />
     <ClInclude Include="MouseHooker.h" />
     <ClInclude Include="RedirectIO.h" />
     <ClInclude Include="stdafx.h" />
