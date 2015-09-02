@@ -6,21 +6,15 @@
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	MSG msg;
+#ifdef DEBUG
 	RedirectIO::ToConsole();
-	SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
+#endif
 
-
-	printf("Overloaded the 'Show Desktop' button with the 'Show Action Center' command...\n");
-	MouseHooker::Start();
+	MSG msg;
 	SystemTrayItem STI;
-	auto mi0OnExecute = [](MenuItem::State state)
-	{
-		printf("state was %d\n", state);
-	};
-	MenuItem mi0(L"Something", mi0OnExecute);
-	STI.AddItem(mi0);
-
+	SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
+	MouseHooker::Start();
+	printf("Overloaded the 'Show Desktop' button with the 'Show Action Center' command...\n");
 
 	// Main message loop:
 	while (GetMessage(&msg, NULL, 0, 0))

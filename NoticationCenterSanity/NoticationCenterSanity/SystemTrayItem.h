@@ -11,6 +11,21 @@
 #define MY_WM_TRAY (WM_APP+30) //Define the magic for sys tray 
 #define CONTEXT_MENU_MSG 900 //high number so default action doesn't take place
 
+
+//Example of usage:
+/*
+ 
+ SystemTrayItem STI;
+ auto mi0OnExecute = [](MenuItem::State state)
+ {
+ printf("state was %d\n", state);
+ };
+ MenuItem mi0(L"Something", mi0OnExecute);
+ STI.AddItem(mi0);
+
+*/
+
+
 class MenuItem
 {
 public:
@@ -58,6 +73,11 @@ public:
 	{
 		Worker = std::thread{ [this]() { Init(); } };
 	}
+	
+	~SystemTrayItem()
+	{
+		Shell_NotifyIcon(NIM_DELETE, &nid);
+	}
 
 	void AddItem(MenuItem mi)
 	{
@@ -100,16 +120,15 @@ public:
 		MSG messages;
 		WNDCLASSEX wincl = { 0 };
 
-		//The Window Structure
 		//wincl.hInstance = hThisInstance;
 		wincl.lpszClassName = wClassName;
-		wincl.lpfnWndProc = WndProc;      /* This function is called by windows */
-		wincl.style = CS_DBLCLKS;                 /* Catch double-clicks */
+		wincl.lpfnWndProc = WndProc;
+		wincl.style = CS_DBLCLKS;
 		wincl.cbSize = sizeof(WNDCLASSEX);
 		wincl.hIcon = LoadIcon(NULL, IDI_APPLICATION);
 		wincl.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 		wincl.hCursor = LoadCursor(NULL, IDC_ARROW);
-		wincl.hbrBackground = (HBRUSH)COLOR_BACKGROUND;  /* Use Windows's default color as the background of the window */
+		wincl.hbrBackground = (HBRUSH)COLOR_BACKGROUND;
 		RegisterClassEx(&wincl);
 
 		//Create the HWND and embed a pointer to @this instance. We'll need the ptr later.
@@ -156,7 +175,7 @@ private:
 			break;
 
 		case WM_DESTROY:
-			PostQuitMessage(0);       /* send a WM_QUIT to the message queue */
+			PostQuitMessage(0);
 			Shell_NotifyIcon(NIM_DELETE, &nid); 
 			break;
 
@@ -176,6 +195,7 @@ private:
 			if (cmd == Items.size())
 			{
 				SendMessage(hwnd, WM_DESTROY, NULL, NULL);
+				_exit(0);
 			}
 			else if (cmd < Items.size() && cmd >= 0)
 			{
