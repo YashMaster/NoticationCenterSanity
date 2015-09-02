@@ -24,9 +24,11 @@ namespace MouseHooker
 		HWND showDesktopHwnd = Taskbar::GetShowDesktopButtonHwnd();
 		GetWindowRect(showDesktopHwnd, &showDesktopButton);
 
-		if (Geometry::IsInRect(cursor, showDesktopButton) == false)
+		if (Geometry::IsInRect(cursor, showDesktopButton, false) == false)
 			goto skip;
 
+		printf("ShowDesktopButton: %d %d %d %d\n", showDesktopButton.left, showDesktopButton.top, showDesktopButton.right, showDesktopButton.bottom);
+		printf("Cursor: %d, %d\n", cursor.x, cursor.y);
 
 		switch (wParam)
 		{

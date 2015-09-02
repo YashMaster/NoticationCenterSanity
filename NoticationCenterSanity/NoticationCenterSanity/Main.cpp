@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include "RedirectIO.h"
 #include "MouseHooker.h"
+#include "SystemTrayItem.h"
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
@@ -10,8 +11,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 
 
-	printf("Starting...\n");
+	printf("Overloaded the 'Show Desktop' button with the 'Show Action Center' command...\n");
 	MouseHooker::Start();
+	SystemTrayItem STI;
+
+
 
 	// Main message loop:
 	while (GetMessage(&msg, NULL, 0, 0))

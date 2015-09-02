@@ -5,13 +5,26 @@ namespace Geometry
 {
 
 	//Returns true if @pt is within @rect
-	static inline bool IsInRect(POINT pt, RECT rect)
+	static inline bool IsInRect(POINT pt, RECT rect, bool edgesCount = true)
 	{
-		if (rect.left <= pt.x && pt.x <= rect.right)
+		if (edgesCount)
 		{
-			if (rect.top <= pt.y && pt.y <= rect.bottom)
+			if (rect.left <= pt.x && pt.x <= rect.right)
 			{
-				return true;
+				if (rect.top <= pt.y && pt.y <= rect.bottom)
+				{
+					return true;
+				}
+			}
+		}
+		else
+		{
+			if (rect.left < pt.x && pt.x < rect.right)
+			{
+				if (rect.top < pt.y && pt.y < rect.bottom)
+				{
+					return true;
+				}
 			}
 		}
 		return false;

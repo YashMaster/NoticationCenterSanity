@@ -47,5 +47,8 @@
     <ClInclude Include="Taskbar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SystemTrayItem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
