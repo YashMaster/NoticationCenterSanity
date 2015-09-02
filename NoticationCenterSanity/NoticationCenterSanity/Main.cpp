@@ -14,7 +14,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	printf("Overloaded the 'Show Desktop' button with the 'Show Action Center' command...\n");
 	MouseHooker::Start();
 	SystemTrayItem STI;
-
+	auto mi0OnExecute = [](MenuItem::State state)
+	{
+		printf("state was %d\n", state);
+	};
+	MenuItem mi0(L"Something", mi0OnExecute);
+	STI.AddItem(mi0);
 
 
 	// Main message loop:

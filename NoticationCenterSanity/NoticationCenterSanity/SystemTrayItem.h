@@ -2,28 +2,66 @@
 
 #include <windows.h>
 #include <string.h>
+#include <string>
 #include <stdio.h>
 #include <thread>
+#include <vector>
 #include "C.h"
 
 #define MY_WM_TRAY (WM_APP+30) //Define the magic for sys tray 
 #define CONTEXT_MENU_MSG 900 //high number so default action doesn't take place
-#define CONTEXT_MENU_MSG_EXIT 911
 
+class MenuItem
+{
+public:
+	enum class Type
+	{
+		Action,
+		SubMenu,
+		CheckBox,
+		Count
+	};
+
+	enum class State
+	{
+		Invoked,
+		Checked,
+		Unchecked,
+		Count
+	};
+
+	std::wstring Title = L"Null";
+	std::function<void(State)> OnExecute = [&](State state) { printf("Did nothing in MenuItem\n"); return; };
+
+	MenuItem(std::wstring title, std::function<void(State)> onExecute)
+	{
+		Title = title;
+		OnExecute = onExecute;
+	}
+
+};
 
 
 class SystemTrayItem
 {
-public:
+private:
 	NOTIFYICONDATA nid = { 0 };
 	std::thread Worker;
 	wchar_t *wClassName = L"SystemTrayClassname";
 	wchar_t *wTitleText = L"SystemTrayTitleText";
 	wchar_t *wToolTip = L"SystemTrayToolTip";
+	std::vector<MenuItem> Items;
+
+public:
 
 	SystemTrayItem()
 	{
 		Worker = std::thread{ [this]() { Init(); } };
+	}
+
+	void AddItem(MenuItem mi)
+	{
+		Items.push_back(mi);
 	}
 
 	BOOL ShowPopupMenu(HWND hWnd)
@@ -33,7 +71,12 @@ public:
 
 		//Add Exit to the context menu
 		int i = 0;
-		InsertMenu(hPop, i + 1, MF_BYPOSITION | MF_STRING, CONTEXT_MENU_MSG + 11, L"Exit");
+		for (i = 0; i < Items.size(); i++)
+		{
+			InsertMenu(hPop, i, MF_BYPOSITION | MF_STRING, CONTEXT_MENU_MSG + i, Items[i].Title.c_str());
+		}
+
+		InsertMenu(hPop, i, MF_BYPOSITION | MF_STRING, CONTEXT_MENU_MSG + i, L"Exit");
 
 		//Set default item
 		SetFocus(hWnd);
@@ -128,22 +171,22 @@ private:
 			break;
 
 		case WM_COMMAND: //A message comes from the context menu!
-			switch ((int)wParam)
+		{
+			int cmd = (int)wParam - CONTEXT_MENU_MSG;
+			if (cmd == Items.size())
 			{
-			case CONTEXT_MENU_MSG_EXIT:
 				SendMessage(hwnd, WM_DESTROY, NULL, NULL);
-				break;
-
-			default:
-				/*if ((int)wParam >= CONTEXT_MENU_MSG && (int)wParam < CONTEXT_MENU_MSG + 10)
-				{
-				char* localCommand = commands[(int)wParam - CONTEXT_MENU_MSG];
-				system(localCommand);
-				}*/
-				printf("Default: Hit a case other than exit...\n");
+			}
+			else if (cmd < Items.size() && cmd >= 0)
+			{
+				Items[cmd].OnExecute(MenuItem::State::Invoked);
+			}
+			else
+			{
+				printf("Default: Hit an unhandled case (%d)\n", cmd);
 			}
 			break;
-
+		}
 		default:
 			return DefWindowProc(hwnd, msg, wParam, lParam);
 		}
