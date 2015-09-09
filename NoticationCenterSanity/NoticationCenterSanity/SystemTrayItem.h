@@ -66,17 +66,31 @@ private:
 	wchar_t *wTitleText = L"SystemTrayTitleText";
 	wchar_t *wToolTip = L"SystemTrayToolTip";
 	std::vector<MenuItem> Items;
+	HWND TrayHwnd = NULL;
 
 public:
 
 	SystemTrayItem()
 	{
-		Worker = std::thread{ [this]() { Init(); } };
+		Init();
+
+		Worker = std::thread{ [this]() 
+		{
+			MSG messages;
+			while (GetMessage(&messages, NULL, 0, 0))
+			{
+				TranslateMessage(&messages);
+				DispatchMessage(&messages);
+			}
+
+		} };
 	}
 	
 	~SystemTrayItem()
 	{
-		Shell_NotifyIcon(NIM_DELETE, &nid);
+		//Make sure the tray icon disappears when this object goes out of scope
+		SendMessage(TrayHwnd, WM_DESTROY, NULL, NULL);
+		Worker.join();
 	}
 
 	void AddItem(MenuItem mi)
@@ -84,7 +98,7 @@ public:
 		Items.push_back(mi);
 	}
 
-	BOOL ShowPopupMenu(HWND hWnd)
+	BOOL ShowPopupMenu(HWND hwnd)
 	{
 		//Add items to context menu
 		HMENU hPop = CreatePopupMenu();
@@ -99,16 +113,17 @@ public:
 		InsertMenu(hPop, i, MF_BYPOSITION | MF_STRING, CONTEXT_MENU_MSG + i, L"Exit");
 
 		//Set default item
-		SetFocus(hWnd);
-		SendMessage(hWnd, WM_INITMENUPOPUP, (WPARAM)hPop, 0);
+		SetFocus(hwnd);
+		SendMessage(hwnd, WM_INITMENUPOPUP, (WPARAM)hPop, 0);
 
 		//Display the context menu
 		POINT pt;
 		GetCursorPos(&pt);
-		WORD cmd = TrackPopupMenu(hPop, TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD | TPM_NONOTIFY, pt.x, pt.y, 0, hWnd, NULL);
+		WORD cmd = TrackPopupMenu(hPop, TPM_LEFTALIGN | TPM_BOTTOMALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwnd, NULL);
+		//WORD cmd = TrackPopupMenu(hPop, TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD | TPM_NONOTIFY, pt.x, pt.y, 0, hWnd, NULL);
 		
 		//Send callback message to the application handle (window)
-		SendMessage(hWnd, WM_COMMAND, cmd, 0);
+		SendMessage(hwnd, WM_COMMAND, cmd, 0);
 		DestroyMenu(hPop);
 
 		return 0;
@@ -116,11 +131,8 @@ public:
 
 	void Init()
 	{
-		HWND hwnd;
-		MSG messages;
 		WNDCLASSEX wincl = { 0 };
 
-		//wincl.hInstance = hThisInstance;
 		wincl.lpszClassName = wClassName;
 		wincl.lpfnWndProc = WndProc;
 		wincl.style = CS_DBLCLKS;
@@ -132,26 +144,21 @@ public:
 		RegisterClassEx(&wincl);
 
 		//Create the HWND and embed a pointer to @this instance. We'll need the ptr later.
-		hwnd = CreateWindowEx(0, wClassName, wTitleText, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 544, 375, HWND_DESKTOP, NULL, NULL, NULL);
-		SetWindowLongPtr(hwnd, GWLP_USERDATA, (long)this);
+		TrayHwnd = CreateWindowEx(0, wClassName, wTitleText, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 544, 375, HWND_DESKTOP, NULL, NULL, NULL);
+		SetWindowLongPtr(TrayHwnd, GWLP_USERDATA, (long)this);
 
 
 		//The Tray Icon structure
 		nid.cbSize = sizeof(NOTIFYICONDATA);
-		nid.hWnd = hwnd;
+		nid.hWnd = TrayHwnd;
 		nid.uID = 30;
 		nid.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
 		nid.uCallbackMessage = MY_WM_TRAY;
+		
 		HMODULE shell32 = LoadLibraryEx(L"shell32.dll", NULL, LOAD_LIBRARY_AS_DATAFILE);
 		nid.hIcon = LoadIcon(shell32, MAKEINTRESOURCE(14));
 		wsprintf(nid.szTip, wToolTip);
 		Shell_NotifyIcon(NIM_ADD, &nid);
-
-		while (GetMessage(&messages, NULL, 0, 0))
-		{
-			TranslateMessage(&messages);
-			DispatchMessage(&messages);
-		}
 
 		return;
 	}
@@ -175,11 +182,11 @@ private:
 			break;
 
 		case WM_DESTROY:
+			Shell_NotifyIcon(NIM_DELETE, &nid);
 			PostQuitMessage(0);
-			Shell_NotifyIcon(NIM_DELETE, &nid); 
 			break;
 
-		case MY_WM_TRAY: //A message arrives from the tray, what could it be?
+		case MY_WM_TRAY: //A message from the system tray
 			switch (lParam)
 			{
 			case WM_LBUTTONUP:
@@ -189,7 +196,7 @@ private:
 			}
 			break;
 
-		case WM_COMMAND: //A message comes from the context menu!
+		case WM_COMMAND: //A message from the system tray's context menu 
 		{
 			int cmd = (int)wParam - CONTEXT_MENU_MSG;
 			if (cmd == Items.size())
@@ -203,7 +210,7 @@ private:
 			}
 			else
 			{
-				printf("Default: Hit an unhandled case (%d)\n", cmd);
+				printf("Default: Hit an unhandled case (%d)\n", cmd) ;
 			}
 			break;
 		}

@@ -9,10 +9,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 #ifdef DEBUG
 	RedirectIO::ToConsole();
 #endif
-
+	RedirectIO::ToConsole();
 	MSG msg;
+
 	SystemTrayItem STI;
-	SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
+
 	MouseHooker::Start();
 	printf("Overloaded the 'Show Desktop' button with the 'Show Action Center' command...\n");
 
