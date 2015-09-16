@@ -33,10 +33,22 @@ namespace MouseHooker
 		switch (wParam)
 		{
 		case WM_LBUTTONDOWN:
+			//Eat this message (AKA don't pass it on)
 			return 1;
 
 		case WM_LBUTTONUP:
+			//Send Win+A to invoke the Action Center
 			SendShortcut(L"{VK_LWIN}A");
+			return 1;
+
+		case WM_RBUTTONDOWN:
+			//Eat this message (AKA don't pass it on)
+			return 1;
+
+		case WM_RBUTTONUP:
+			//Send Win+Tab to invoke the Task Switcher
+			SendShortcut(L"{VK_LWIN}{VK_TAB}");
+
 			return 1;
 		}
 
