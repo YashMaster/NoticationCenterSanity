@@ -14,7 +14,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 	SystemTrayItem STI;
 
-	MouseHooker::Start();
+	SendShortcut(L"{VK_CONTROL}{VK_LWIN}{VK_F24}");
+
+	//MouseHooker::Start();
 	printf("Overloaded the 'Show Desktop' button with the 'Show Action Center' command...\n");
 
 	// Main message loop:

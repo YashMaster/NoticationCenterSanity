@@ -73,12 +73,15 @@ public:
 	SystemTrayItem()
 	{
 		Init();
+		printf("Init() size = %d\n", Items.size());
 
 		Worker = std::thread{ [this]() 
 		{
+			printf("Thread size = %d\n", Items.size());
 			MSG messages;
 			while (GetMessage(&messages, NULL, 0, 0))
 			{
+				printf("loop size = %d\n", Items.size());
 				TranslateMessage(&messages);
 				DispatchMessage(&messages);
 			}
@@ -100,13 +103,17 @@ public:
 
 	BOOL ShowPopupMenu(HWND hwnd)
 	{
+		printf("showpop size = %d\n", Items.size());
+
 		//Add items to context menu
 		HMENU hPop = CreatePopupMenu();
 
 		//Add Exit to the context menu
+		printf("items size = %d\n", Items.size());
 		int i = 0;
 		for (i = 0; i < Items.size(); i++)
 		{
+			printf("items = %d\n", i);
 			InsertMenu(hPop, i, MF_BYPOSITION | MF_STRING, CONTEXT_MENU_MSG + i, Items[i].Title.c_str());
 		}
 
@@ -191,6 +198,8 @@ private:
 			{
 			case WM_LBUTTONUP:
 			case WM_RBUTTONUP:
+				printf("button press size = %d\n", Items.size());
+				printf("Button press occured! \n ");
 				ShowPopupMenu(hwnd);
 				break;
 			}
